@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Embed — FDE Services for SaaS</title>
+  <meta name="description" content="Embed senior engineers into your customer deployments. We ship integrations, migrations, and go-lives—so your team ships features.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #FEFDFB;
+      --color-surface: #FFFFFF;
+      --color-text: #0D0D0C;
+      --color-text-soft: #666664;
+      --color-border: #E8E7E4;
+      --color-accent: #6D28D9;
+      --color-accent-light: #A78BFA;
+      --color-accent-bg: #F3E8FF;
+      --color-success: #059669;
+      --color-dark: #1A1A18;
+      --color-dark-text: #F5F5F3;
+
+      --font-display: "Outfit", system-ui, -apple-system, sans-serif;
+      --font-body: "Outfit", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2.5rem;
+      --spacing-xl: 4rem;
+      --spacing-2xl: 6rem;
+
+      --radius: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #0F0F0E;
+        --color-surface: #1A1A18;
+        --color-text: #F5F5F3;
+        --color-text-soft: #999997;
+        --color-border: #2D2D2A;
+        --color-accent: #A78BFA;
+        --color-accent-light: #C4B5FD;
+        --color-accent-bg: #2D1B69;
+        --color-success: #10B981;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; margin: 0; letter-spacing: -0.02em; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+    h2 { font-size: clamp(1.5rem, 3.5vw, 2.5rem); }
+    h3 { font-size: 1.25rem; }
+    p { margin: 0; }
+    a { color: var(--color-accent); text-decoration: none; transition: var(--transition); }
+    a:hover { color: var(--color-accent-light); }
+    button { cursor: pointer; border: none; font-family: inherit; }
+
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-lg); }
+    .section { padding: var(--spacing-2xl) 0; }
+
+    /* Skip link */
+    .skip { position: absolute; top: -40px; left: 0; background: var(--color-accent); color: white; padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius); z-index: 100; }
+    .skip:focus { top: var(--spacing-sm); }
+
+    /* Header */
+    .header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(254, 253, 251, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--color-border);
+      transition: var(--transition);
+    }
+    @media (prefers-color-scheme: dark) {
+      .header { background: rgba(15, 15, 14, 0.95); }
+    }
+
+    .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
+    .logo { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: var(--color-text); }
+    .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--color-accent); color: white; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+
+    .nav { display: flex; align-items: center; gap: var(--spacing-lg); }
+    .nav-links { display: flex; gap: var(--spacing-lg); list-style: none; margin: 0; padding: 0; }
+    .nav-links a { color: var(--color-text-soft); font-size: 0.95rem; font-weight: 500; position: relative; padding-bottom: 0.25rem; }
+    .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--color-accent); transition: var(--transition); }
+    .nav-links a:hover { color: var(--color-text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .menu-toggle { display: none; }
+    .menu-btn { display: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--color-border); background: transparent; }
+    .menu-btn::before, .menu-btn::after, .menu-btn .hamburger { content: ''; display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 2px; position: absolute; transition: var(--transition); }
+    .menu-btn::before { top: 12px; }
+    .menu-btn .hamburger { top: 21px; }
+    .menu-btn::after { top: 30px; }
+    .menu-toggle:checked + .menu-btn::before { transform: translateY(9px) rotate(45deg); }
+    .menu-toggle:checked + .menu-btn .hamburger { opacity: 0; }
+    .menu-toggle:checked + .menu-btn::after { transform: translateY(-9px) rotate(-45deg); }
+
+    .cta { display: flex; gap: var(--spacing-sm); align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+      transition: var(--transition); border: 1.5px solid transparent;
+      min-height: 44px;
+    }
+    .btn-primary { background: var(--color-accent); color: white; }
+    .btn-primary:hover { background: var(--color-accent-light); }
+    .btn-outline { border-color: var(--color-accent); color: var(--color-accent); background: transparent; }
+    .btn-outline:hover { background: var(--color-accent-bg); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .menu-btn { display: flex; align-items: center; justify-content: center; position: relative; }
+      .menu-toggle:checked ~ .nav .nav-links {
+        display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+        padding: var(--spacing-lg) 0;
+        gap: 0; max-height: 80vh; overflow-y: auto;
+      }
+      .menu-toggle:checked ~ .nav .nav-links a { padding: var(--spacing-md) var(--spacing-lg); display: block; }
+      .menu-toggle:checked ~ .nav .nav-links a::after { display: none; }
+      .cta { flex-wrap: wrap; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
+    }
+
+    /* Hero */
+    .hero { background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-accent-bg) 100%); padding-block: 5rem 4rem; }
+    .hero-grid { display: grid; gap: var(--spacing-2xl); align-items: center; }
+    @media (min-width: 1024px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+
+    .hero-content h1 { margin-bottom: var(--spacing-md); }
+    .hero-content h1 em { color: var(--color-accent); font-style: normal; }
+    .hero-desc { font-size: 1.1rem; color: var(--color-text-soft); max-width: 500px; margin-bottom: var(--spacing-lg); line-height: 1.8; }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-lg); margin-top: var(--spacing-2xl); }
+    .stat { border-top: 2px solid var(--color-accent); padding-top: var(--spacing-md); }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--color-accent); }
+    .stat-label { font-size: 0.85rem; color: var(--color-text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+
+    .hero-visual { background: var(--color-dark); border-radius: var(--radius-lg); padding: var(--spacing-lg); color: var(--color-dark-text); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8; overflow-x: auto; box-shadow: 0 20px 60px -20px rgba(0,0,0,0.2); }
+    .code-line { display: block; white-space: nowrap; }
+    .code-comment { color: #6B7280; }
+    .code-string { color: #10B981; }
+    .code-key { color: #F59E0B; }
+
+    /* Brands */
+    .brands { padding: var(--spacing-xl) 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+    .brands p { text-align: center; font-size: 0.85rem; color: var(--color-text-soft); margin-bottom: var(--spacing-lg); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .brand-list { display: flex; flex-wrap: wrap; gap: var(--spacing-lg) var(--spacing-2xl); justify-content: center; align-items: center; }
+    .brand-item { color: var(--color-text-soft); font-weight: 600; opacity: 0.7; }
+
+    /* Features */
+    .features { padding-block: var(--spacing-2xl); }
+    .features-head { max-width: 600px; margin-bottom: var(--spacing-2xl); }
+    .features-head h2 { margin-bottom: var(--spacing-md); }
+    .features-grid { display: grid; gap: var(--spacing-xl); }
+    @media (min-width: 768px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .feature-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: var(--transition);
+    }
+    .feature-card:hover { border-color: var(--color-accent); box-shadow: 0 10px 30px -10px rgba(109, 40, 217, 0.15); transform: translateY(-2px); }
+    .feature-icon { width: 48px; height: 48px; border-radius: var(--radius); background: var(--color-accent-bg); color: var(--color-accent); display: grid; place-items: center; font-size: 1.5rem; margin-bottom: var(--spacing-md); }
+    .feature-card h3 { margin-bottom: var(--spacing-sm); }
+    .feature-card p { color: var(--color-text-soft); font-size: 0.95rem; line-height: 1.7; }
+
+    /* Timeline */
+    .timeline { background: var(--color-dark); color: var(--color-dark-text); padding-block: var(--spacing-2xl); }
+    .timeline h2 { color: var(--color-dark-text); margin-bottom: var(--spacing-2xl); }
+    .timeline-grid { display: grid; gap: var(--spacing-xl); }
+    @media (min-width: 768px) { .timeline-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .timeline-item { border-left: 2px solid var(--color-accent); padding-left: var(--spacing-lg); }
+    .timeline-item-num { font-family: var(--font-mono); color: var(--color-accent); font-size: 0.85rem; font-weight: 600; }
+    .timeline-item h3 { color: var(--color-dark-text); margin: var(--spacing-md) 0; }
+    .timeline-item p { color: #D1D5DB; font-size: 0.95rem; line-height: 1.6; }
+
+    /* CTA Section */
+    .cta-section { background: var(--color-accent); color: white; padding-block: var(--spacing-2xl); border-radius: var(--radius-lg); text-align: center; }
+    .cta-section h2 { color: white; margin-bottom: var(--spacing-md); }
+    .cta-section p { color: rgba(255,255,255,0.9); max-width: 500px; margin: 0 auto var(--spacing-lg); }
+    .cta-section .btn-outline { border-color: white; color: white; }
+    .cta-section .btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+    /* Pricing */
+    .pricing { padding-block: var(--spacing-2xl); }
+    .pricing-head { text-align: center; max-width: 600px; margin: 0 auto var(--spacing-2xl); }
+    .pricing-grid { display: grid; gap: var(--spacing-xl); }
+    @media (min-width: 900px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .price-card {
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      text-align: center;
+      transition: var(--transition);
+      position: relative;
+    }
+    .price-card.featured {
+      border-color: var(--color-accent);
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px -20px rgba(109, 40, 217, 0.3);
+    }
+    .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--color-accent); color: white; padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .price-name { font-size: 1.25rem; font-weight: 700; margin-bottom: var(--spacing-md); }
+    .price-amount { font-size: 2.5rem; font-weight: 800; color: var(--color-accent); }
+    .price-period { font-size: 0.85rem; color: var(--color-text-soft); }
+    .price-features { list-style: none; margin: var(--spacing-lg) 0; text-align: left; }
+    .price-features li { padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--color-border); font-size: 0.95rem; display: flex; align-items: center; gap: var(--spacing-sm); }
+    .price-features li::before { content: '✓'; color: var(--color-success); font-weight: 700; }
+    .price-features li:last-child { border-bottom: none; }
+    .price-card .btn { width: 100%; margin-top: var(--spacing-lg); }
+
+    /* FAQ */
+    .faq { padding-block: var(--spacing-2xl); }
+    .faq-head { max-width: 600px; margin-bottom: var(--spacing-2xl); }
+    .faq-items { max-width: 700px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--color-border); padding: var(--spacing-lg) 0; }
+    .faq-summary { cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-lg); font-weight: 600; user-select: none; padding: 0; background: transparent; border: none; width: 100%; text-align: left; color: var(--color-text); font-size: 1rem; font-family: inherit; }
+    .faq-summary:hover { color: var(--color-accent); }
+    .faq-toggle { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: var(--transition); }
+    details[open] .faq-toggle { transform: rotate(180deg); }
+    .faq-content { padding-top: var(--spacing-md); color: var(--color-text-soft); line-height: 1.8; font-size: 0.95rem; }
+
+    /* Footer */
+    .footer { background: var(--color-dark); color: var(--color-dark-text); padding-block: var(--spacing-2xl); }
+    .footer-grid { display: grid; gap: var(--spacing-2xl); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .footer-col h4 { color: white; margin-bottom: var(--spacing-md); }
+    .footer-col ul { list-style: none; margin: 0; padding: 0; }
+    .footer-col li { margin-bottom: var(--spacing-sm); }
+    .footer-col a { color: #D1D5DB; }
+    .footer-col a:hover { color: var(--color-accent-light); }
+    .footer-base { border-top: 1px solid #444; padding-top: var(--spacing-lg); margin-top: var(--spacing-2xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-lg); font-size: 0.85rem; color: #999; }
+
+    /* Utility */
+    .text-accent { color: var(--color-accent); }
+    .text-center { text-align: center; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+
+  <header class="header">
+    <div class="container header-inner">
+      <a class="logo" href="#" aria-label="Embed home">
+        <span class="logo-icon">⧉</span>
+        Embed
+      </a>
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Toggle menu">
+      <label for="menu-toggle" class="menu-btn"><span class="hamburger"></span></label>
+      <nav class="nav" aria-label="Main navigation">
+        <ul class="nav-links">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#timeline">Process</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="cta">
+        <a href="#contact" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <h1>Deploy faster with <em>embedded</em> engineers.</h1>
+          <p class="hero-desc">Stop waiting for integrations. We embed senior engineers directly with your customers—shipping migrations, APIs, and go-lives in weeks, not months.</p>
+          <div class="cta">
+            <a href="#contact" class="btn btn-primary">Book a call</a>
+            <a href="#services" class="btn btn-outline">Learn more</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-value">2.8 wks</div>
+              <div class="stat-label">Avg. deployment time</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">200+</div>
+              <div class="stat-label">Live deployments</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">96%</div>
+              <div class="stat-label">Renewal rate</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <code class="code-line"><span class="code-comment"># Embed deployment log</span></code>
+          <code class="code-line">$ <span class="code-key">embed</span> deploy --customer acme</code>
+          <code class="code-line">&nbsp;</code>
+          <code class="code-line"><span class="code-comment">✓ Access granted (day 1)</span></code>
+          <code class="code-line"><span class="code-comment">✓ Architecture mapped (day 2)</span></code>
+          <code class="code-line"><span class="code-comment">✓ SSO configured (day 4)</span></code>
+          <code class="code-line"><span class="code-comment">✓ Data migration (day 8)</span></code>
+          <code class="code-line"><span class="code-comment">✓ Go-live prepared (day 12)</span></code>
+          <code class="code-line"><span class="code-comment">✓ Rollout complete (day 16)</span></code>
+          <code class="code-line">&nbsp;</code>
+          <code class="code-line">Status: <span class="code-string">DEPLOYED_AND_ADOPTED</span></code>
+        </div>
+      </div>
+    </section>
+
+    <!-- Brands -->
+    <section class="brands">
+      <div class="container">
+        <p>Trusted by engineering teams at</p>
+        <div class="brand-list">
+          <span class="brand-item">Protocol Labs</span>
+          <span class="brand-item">Waveform</span>
+          <span class="brand-item">Zenith AI</span>
+          <span class="brand-item">Nexus</span>
+          <span class="brand-item">Prism</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section class="features section" id="services">
+      <div class="container">
+        <div class="features-head">
+          <h2>What we handle</h2>
+          <p style="color: var(--color-text-soft);">Every deployment is different. We adapt.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔗</div>
+            <h3>Custom integrations</h3>
+            <p>APIs, webhooks, ERPs, data warehouses—connected and tested with the customer's real systems from day one.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Data migrations</h3>
+            <p>Mapping, validation, and live cutover of legacy data. We handle the technical side so you focus on adoption.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔐</div>
+            <h3>Security & compliance</h3>
+            <p>Questionnaires, architecture reviews, and on-prem constraints—answered in code by someone who understands both.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🚀</div>
+            <h3>Go-live orchestration</h3>
+            <p>Phased rollouts, cutover planning, and runbooks. Your customer's team takes it from there with confidence.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="timeline section" id="timeline">
+      <div class="container">
+        <h2 class="text-center">Simple. Four-week engagement.</h2>
+        <p class="text-center" style="color: #D1D5DB; margin-bottom: var(--spacing-2xl);">Scope, embed, build, hand off. No black box.</p>
+        <div class="timeline-grid">
+          <div class="timeline-item">
+            <div class="timeline-item-num">WEEK 1</div>
+            <h3>Scope</h3>
+            <p>Deep dive with your team and the customer. We define done in writing and commit to a timeline.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-item-num">WEEK 2</div>
+            <h3>Embed</h3>
+            <p>Our engineer joins the customer's channels, gets access, and maps every system and constraint.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-item-num">WEEKS 3-4</div>
+            <h3>Build</h3>
+            <p>Integrations, migrations, and security work ship behind a pilot group. Daily progress updates.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-item-num">WEEK 5</div>
+            <h3>Hand off</h3>
+            <p>Full rollout, runbooks, training, and a deployment report. The customer owns it all.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="cta-section">
+          <h2>Your integration is stuck?</h2>
+          <p>Tell us what's blocked. We'll reply with a plan within 24 hours.</p>
+          <a href="#contact" class="btn btn-outline">Get a quick assessment</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing section" id="pricing">
+      <div class="container">
+        <div class="pricing-head">
+          <h2>Transparent pricing</h2>
+          <p style="color: var(--color-text-soft);">No retainers. Per-engagement quotes, every time.</p>
+        </div>
+        <div class="pricing-grid">
+          <div class="price-card">
+            <h3 class="price-name">Quick Start</h3>
+            <div class="price-amount">$15k</div>
+            <div class="price-period">1–2 weeks</div>
+            <ul class="price-features">
+              <li>One senior engineer</li>
+              <li>Single integration or PoC</li>
+              <li>Daily standups</li>
+              <li>Basic runbook</li>
+            </ul>
+            <a href="#contact" class="btn btn-outline">Start now</a>
+          </div>
+          <div class="price-card featured">
+            <div class="price-badge">Most Popular</div>
+            <h3 class="price-name">Full Deployment</h3>
+            <div class="price-amount">$42k</div>
+            <div class="price-period">4–5 weeks</div>
+            <ul class="price-features">
+              <li>Dedicated engineer</li>
+              <li>Multiple integrations</li>
+              <li>Migration + rollout</li>
+              <li>Full documentation</li>
+              <li>Post-go-live support</li>
+            </ul>
+            <a href="#contact" class="btn btn-primary">Book now</a>
+          </div>
+          <div class="price-card">
+            <h3 class="price-name">Enterprise</h3>
+            <div class="price-amount">Custom</div>
+            <div class="price-period">Ongoing engagement</div>
+            <ul class="price-features">
+              <li>Multiple engineers</li>
+              <li>Shared playbooks</li>
+              <li>Quarterly reviews</li>
+              <li>Priority SLA</li>
+              <li>Shared roadmap alignment</li>
+            </ul>
+            <a href="#contact" class="btn btn-outline">Talk to us</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq section" id="faq">
+      <div class="container">
+        <div class="faq-head">
+          <h2>Frequently asked</h2>
+          <p style="color: var(--color-text-soft);">Everything else you need to know.</p>
+        </div>
+        <div class="faq-items">
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>What exactly is a Forward Deployed Engineer?</span>
+              <span class="faq-toggle">▼</span>
+            </summary>
+            <div class="faq-content">
+              <p>An FDE is a senior software engineer who works directly inside your customer's environment—on their Slack, in their codebase, at their desks—until the deployment is live and adopted. Think of them as a trusted engineer who speaks your product's language and your customer's technical constraints fluently.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>Do your engineers represent our company?</span>
+              <span class="faq-toggle">▼</span>
+            </summary>
+            <div class="faq-content">
+              <p>Yes, by design. Most customers prefer our FDEs to use your company email and represent your brand. They're embedded as part of your team, not a third-party vendor.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>What tech stacks do you cover?</span>
+              <span class="faq-toggle">▼</span>
+            </summary>
+            <div class="faq-content">
+              <p>TypeScript, Python, Go, Java, and Node.js on the application side. Postgres, Snowflake, BigQuery on data. AWS, GCP, Azure on infrastructure. We also have deep expertise in common SaaS integrations (Salesforce, SAP, Okta, ServiceNow) and legacy systems.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>Can work be done fully remote?</span>
+              <span class="faq-toggle">▼</span>
+            </summary>
+            <div class="faq-content">
+              <p>Absolutely. Most engagements are fully remote. For customer-sensitive environments or go-live week, we can be on-site—travel is billed at cost plus our standard rate.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-summary">
+              <span>What if a deployment runs over?</span>
+              <span class="faq-toggle">▼</span>
+            </summary>
+            <div class="faq-content">
+              <p>If we miss our committed definition of done for reasons within our control, we keep working at no additional cost until it's met. We take accountability for outcomes, not just effort.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="section" id="contact" style="padding-block: var(--spacing-xl);">
+      <div class="container text-center">
+        <h2 style="margin-bottom: var(--spacing-md);">Ready to move faster?</h2>
+        <p style="color: var(--color-text-soft); margin-bottom: var(--spacing-lg); max-width: 500px; margin-left: auto; margin-right: auto;">Let's talk about your next deployment. An engineer will reach out within one business day.</p>
+        <a href="mailto:hello@embed.dev?subject=Deployment%20inquiry" class="btn btn-primary">hello@embed.dev</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <a class="logo" href="#" style="color: white; margin-bottom: var(--spacing-md);">
+          <span class="logo-icon">⧉</span>
+          Embed
+        </a>
+        <p style="font-size: 0.9rem; color: #999; margin: var(--spacing-md) 0 0;">Senior engineers embedded with your customers until it ships.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#timeline">Process</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-base">
+      <p>© 2026 Embed Engineering. All rights reserved.</p>
+      <nav>
+        <a href="#">Privacy</a> · <a href="#">Terms</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

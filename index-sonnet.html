@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pathfinder FDE — Forward Deployed Engineers, On Demand</title>
+<meta name="description" content="Pathfinder embeds senior Forward Deployed Engineers inside your team to ship integrations, prototypes, and production fixes — fast.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --color-primary: #0F172A;
+    --color-on-primary: #FFFFFF;
+    --color-secondary: #334155;
+    --color-accent: #0369A1;
+    --color-accent-hover: #075985;
+    --color-on-accent: #FFFFFF;
+    --color-background: #F8FAFC;
+    --color-foreground: #020617;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #020617;
+    --color-muted: #E8ECF1;
+    --color-muted-foreground: #475569;
+    --color-border: #E2E8F0;
+    --color-ring: #0F172A;
+
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    --space-1: 0.5rem;
+    --space-2: 0.75rem;
+    --space-3: 1rem;
+    --space-4: 1.5rem;
+    --space-5: 2rem;
+    --space-6: 3rem;
+    --space-7: 4rem;
+    --space-8: 6rem;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+
+    --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.06);
+    --shadow-md: 0 8px 24px rgba(2, 6, 23, 0.08);
+    --shadow-lg: 0 20px 48px rgba(2, 6, 23, 0.14);
+
+    --container-width: 1200px;
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* --color-primary / --color-on-primary intentionally unchanged: the header,
+         hero, footer and dark sections stay navy-on-white chrome in both modes. */
+      --color-secondary: #94A3B8;
+      --color-accent: #38BDF8;
+      --color-accent-hover: #7DD3FC;
+      --color-on-accent: #04121F;
+      --color-background: #0B1220;
+      --color-foreground: #F1F5F9;
+      --color-card: #121B2E;
+      --color-card-foreground: #F1F5F9;
+      --color-muted: #1A2538;
+      --color-muted-foreground: #94A3B8;
+      --color-border: #223049;
+      --color-ring: #38BDF8;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  /* ---------- Reset ---------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body, h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+  ul[class], ol[class] { list-style: none; margin: 0; padding: 0; }
+  img, picture, svg { display: block; max-width: 100%; }
+  input, button, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  html, body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; color: var(--color-foreground); }
+  h1 { font-size: clamp(2.1rem, 4.5vw + 1rem, 3.5rem); font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.75rem, 2.5vw + 1rem, 2.5rem); letter-spacing: -0.01em; }
+  h3 { font-size: 1.25rem; }
+  p { color: var(--color-muted-foreground); }
+
+  :focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: var(--container-width);
+    margin-inline: auto;
+    padding-inline: var(--space-4);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: var(--space-3);
+    top: -60px;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    z-index: 100;
+    transition: top var(--transition-base);
+    font-weight: 600;
+  }
+  .skip-link:focus { top: var(--space-3); }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: 48px;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    border: 1px solid transparent;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    white-space: nowrap;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover { background: var(--color-accent-hover); box-shadow: var(--shadow-md); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-on-primary);
+    border-color: rgba(255,255,255,0.35);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-outline {
+    background: transparent;
+    color: var(--color-foreground);
+    border-color: var(--color-border);
+  }
+  .btn-outline:hover { background: var(--color-muted); }
+  .btn-block { width: 100%; }
+
+  /* ---------- Header ---------- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 72px;
+    gap: var(--space-4);
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--color-accent), #38BDF8);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    flex: 1;
+    justify-content: center;
+  }
+  .nav-links a {
+    color: rgba(255,255,255,0.82);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: var(--space-1) 0;
+    border-bottom: 2px solid transparent;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+  .nav-links a:hover { color: #fff; border-color: var(--color-accent); }
+
+  .nav-actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+  .nav-mobile-cta { display: none; }
+
+  /* Mobile nav toggle (checkbox hack — pure CSS) */
+  .nav-toggle { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .hamburger {
+    display: none;
+    width: 44px; height: 44px;
+    border-radius: var(--radius-sm);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .hamburger:hover { background: rgba(255,255,255,0.08); }
+  .hamburger-icon, .hamburger-icon::before, .hamburger-icon::after {
+    content: "";
+    display: block;
+    width: 22px; height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+  }
+  .hamburger-icon { position: relative; }
+  .hamburger-icon::before { position: absolute; top: -7px; }
+  .hamburger-icon::after { position: absolute; top: 7px; }
+  .nav-toggle:checked ~ .container .hamburger .hamburger-icon { background: transparent; }
+  .nav-toggle:checked ~ .container .hamburger .hamburger-icon::before { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle:checked ~ .container .hamburger .hamburger-icon::after { transform: translateY(-7px) rotate(-45deg); }
+
+  @media (max-width: 860px) {
+    .nav-links {
+      position: absolute;
+      top: 72px;
+      left: 0; right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      background: var(--color-primary);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-base);
+    }
+    .nav-links a {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-toggle:checked ~ .container .nav-links { max-height: 60vh; overflow-y: auto; }
+    .hamburger { display: inline-flex; }
+    .nav-actions .btn-ghost,
+    .nav-actions > .btn-primary { display: none; }
+    .nav-mobile-cta { display: flex; margin: var(--space-3) var(--space-4); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: radial-gradient(circle at 15% 0%, #16233e 0%, var(--color-primary) 55%, #0a1324 100%);
+    color: var(--color-on-primary);
+    padding-block: var(--space-8) var(--space-7);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 75%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .hero-inner { grid-template-columns: 1.1fr 0.9fr; }
+  }
+  .hero-eyebrow { color: #7DD3FC; }
+  .hero h1 { color: #fff; margin-top: var(--space-3); }
+  .hero-sub {
+    margin-top: var(--space-4);
+    font-size: 1.125rem;
+    color: rgba(226, 232, 240, 0.85);
+    max-width: 44ch;
+  }
+  .hero-cta-row {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .hero-meta {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    color: rgba(226,232,240,0.7);
+    font-size: 0.9rem;
+  }
+  .hero-meta li { display: flex; align-items: center; gap: var(--space-1); }
+
+  .hero-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    backdrop-filter: blur(6px);
+  }
+  .hero-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-block: var(--space-3);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .hero-card-row:last-child { border-bottom: none; }
+  .hero-card-row .stat { font-size: 1.75rem; font-weight: 800; color: #fff; }
+  .hero-card-row .label { color: rgba(226,232,240,0.7); font-size: 0.9rem; text-align: right; }
+
+  /* ---------- Trust bar ---------- */
+  .trust {
+    padding-block: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .trust p {
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-muted-foreground);
+    margin-bottom: var(--space-4);
+  }
+  .trust-logos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-6);
+    color: var(--color-secondary);
+    font-weight: 700;
+    font-size: 1.1rem;
+    opacity: 0.6;
+  }
+
+  /* ---------- Section scaffolding ---------- */
+  .section { padding-block: var(--space-8); }
+  .section-muted { background: var(--color-muted); }
+  .section-dark { background: var(--color-primary); color: var(--color-on-primary); }
+  .section-dark h1, .section-dark h2, .section-dark h3, .section-dark h4 { color: var(--color-on-primary); }
+  .section-head { max-width: 640px; margin-inline: auto; text-align: center; margin-bottom: var(--space-7); }
+  .section-head p { margin-top: var(--space-3); font-size: 1.05rem; }
+  .section-dark .section-head p { color: rgba(226,232,240,0.78); }
+
+  /* ---------- Services grid ---------- */
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) { .grid-services { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .grid-services { grid-template-columns: repeat(3, 1fr); } }
+
+  .card {
+    background: var(--color-card);
+    color: var(--color-card-foreground);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    height: 100%;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-sm);
+    background: var(--color-muted);
+    color: var(--color-accent);
+    display: grid;
+    place-items: center;
+    margin-bottom: var(--space-4);
+  }
+  .card h3 { margin-bottom: var(--space-2); }
+
+  /* ---------- Process ---------- */
+  .process-list {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: 1fr;
+    counter-reset: step;
+  }
+  @media (min-width: 860px) { .process-list { grid-template-columns: repeat(4, 1fr); } }
+  .process-step { position: relative; padding-top: var(--space-5); }
+  .process-step::before {
+    counter-increment: step;
+    content: counter(step, decimal-leading-zero);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-accent);
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+  .process-step h3 { margin-bottom: var(--space-1); }
+  @media (min-width: 860px) {
+    .process-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: calc(var(--space-5) + 0.9rem);
+      left: calc(100% + var(--space-2));
+      width: calc(var(--space-5) * 1.2);
+      height: 2px;
+      background: var(--color-border);
+    }
+  }
+
+  /* ---------- Stats strip ---------- */
+  .stats-strip {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(2, 1fr);
+    text-align: center;
+  }
+  @media (min-width: 760px) { .stats-strip { grid-template-columns: repeat(4, 1fr); } }
+  .stats-strip .num { font-size: clamp(2rem, 2.5vw + 1rem, 2.75rem); font-weight: 800; color: #fff; }
+  .stats-strip .cap { color: rgba(226,232,240,0.75); font-size: 0.9rem; margin-top: var(--space-1); }
+
+  /* ---------- Testimonials ---------- */
+  .grid-testimonials { grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .grid-testimonials { grid-template-columns: repeat(3, 1fr); } }
+  .quote-card { display: flex; flex-direction: column; }
+  .quote-mark { color: var(--color-accent); margin-bottom: var(--space-3); }
+  .quote-card blockquote { color: var(--color-card-foreground); font-size: 1.02rem; flex: 1; }
+  .quote-author { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-4); }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-accent), #0F172A);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .quote-author .name { font-weight: 700; font-size: 0.95rem; color: var(--color-card-foreground); }
+  .quote-author .role { font-size: 0.85rem; color: var(--color-muted-foreground); }
+
+  /* ---------- Engagement / pricing ---------- */
+  .grid-plans { grid-template-columns: 1fr; }
+  @media (min-width: 860px) { .grid-plans { grid-template-columns: repeat(3, 1fr); } }
+  .plan-card { display: flex; flex-direction: column; }
+  .plan-card.featured {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  .plan-badge {
+    position: absolute;
+    top: -14px; left: var(--space-4);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .plan-price { font-size: 1.1rem; color: var(--color-muted-foreground); margin-top: var(--space-2); }
+  .plan-features { margin-top: var(--space-4); margin-bottom: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); flex: 1; }
+  .plan-features li { display: flex; align-items: flex-start; gap: var(--space-2); font-size: 0.95rem; color: var(--color-card-foreground); }
+  .plan-features svg { flex-shrink: 0; color: var(--color-accent); margin-top: 3px; }
+
+  /* ---------- FAQ (details/summary — pure HTML/CSS) ---------- */
+  .faq-list { max-width: 760px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-3); }
+  .faq-item {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .faq-item summary {
+    cursor: pointer;
+    list-style: none;
+    padding: var(--space-4) var(--space-5);
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 44px;
+    color: var(--color-card-foreground);
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary .chevron { transition: transform var(--transition-base); color: var(--color-accent); flex-shrink: 0; }
+  .faq-item[open] summary .chevron { transform: rotate(180deg); }
+  .faq-item summary:hover { background: var(--color-muted); }
+  .faq-answer { padding: 0 var(--space-5) var(--space-4); color: var(--color-muted-foreground); }
+
+  /* ---------- Final CTA ---------- */
+  .final-cta {
+    background: linear-gradient(135deg, var(--color-primary), #0a1830);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+  }
+  .final-cta h2 { color: #fff; }
+  .final-cta p { color: rgba(226,232,240,0.8); max-width: 50ch; margin: var(--space-3) auto 0; }
+  .final-cta .hero-cta-row { justify-content: center; }
+
+  /* ---------- Contact form ---------- */
+  .contact-wrap {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 900px) { .contact-wrap { grid-template-columns: 0.9fr 1.1fr; } }
+  .contact-info .info-row { display: flex; gap: var(--space-3); align-items: flex-start; margin-top: var(--space-4); }
+  .contact-info .info-row svg { color: var(--color-accent); flex-shrink: 0; margin-top: 2px; }
+  .form-card {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+  }
+  .form-grid { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+  @media (min-width: 560px) { .form-grid.two-col { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: var(--space-1); }
+  .field label { font-weight: 600; font-size: 0.9rem; color: var(--color-card-foreground); }
+  .field input, .field textarea, .field select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 0.9rem;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    min-height: 48px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+  .field textarea { min-height: 120px; resize: vertical; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.18);
+  }
+  .field .hint { font-size: 0.8rem; color: var(--color-muted-foreground); }
+  .form-actions { margin-top: var(--space-2); }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    background: var(--color-primary);
+    color: rgba(226,232,240,0.85);
+    padding-block: var(--space-7) var(--space-5);
+  }
+  .footer-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 700px) { .footer-grid { grid-template-columns: 1.4fr repeat(3, 1fr); } }
+  .footer-grid h4 { color: #fff; font-size: 0.9rem; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: var(--space-3); }
+  .footer-links { display: flex; flex-direction: column; gap: var(--space-2); }
+  .footer-links a { color: rgba(226,232,240,0.75); font-size: 0.95rem; transition: color var(--transition-fast); }
+  .footer-links a:hover { color: #fff; }
+  .footer-brand p { color: rgba(226,232,240,0.7); margin-top: var(--space-3); max-width: 32ch; }
+  .footer-social { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
+  .footer-social a {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    display: grid;
+    place-items: center;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  }
+  .footer-social a:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+  .footer-bottom {
+    margin-top: var(--space-7);
+    padding-top: var(--space-4);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: rgba(226,232,240,0.6);
+  }
+  .footer-bottom-links { display: flex; gap: var(--space-4); }
+
+  /* ---------- Utilities ---------- */
+  .text-center { text-align: center; }
+  .mt-0 { margin-top: 0 !important; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <div class="container">
+    <div class="nav-row">
+      <a class="logo" href="#top" aria-label="Pathfinder FDE home">
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2-8-9-3z"/></svg>
+        </span>
+        Pathfinder FDE
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#services">Services</a>
+        <a href="#process">Process</a>
+        <a href="#why">Why Us</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#engagements">Engagements</a>
+        <a href="#faq">FAQ</a>
+        <a class="btn btn-primary nav-mobile-cta" href="#contact">Book a Call</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="#contact">Sign in</a>
+        <a class="btn btn-primary" href="#contact">Book a Call</a>
+        <label class="hamburger" for="nav-toggle">
+          <span class="visually-hidden">Toggle navigation menu</span>
+          <span class="hamburger-icon" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero-inner">
+      <div>
+        <span class="eyebrow hero-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 2l9 4.5v9L12 20l-9-4.5v-9L12 2z"/></svg>
+          Forward Deployed Engineering
+        </span>
+        <h1>Engineers embedded with your team, shipping from day one.</h1>
+        <p class="hero-sub">
+          Pathfinder places senior Forward Deployed Engineers directly inside your product and your customer's
+          stack — turning gnarly integrations, custom demos, and stalled rollouts into shipped, production-grade
+          outcomes in weeks, not quarters.
+        </p>
+        <div class="hero-cta-row">
+          <a class="btn btn-primary" href="#contact">
+            Book a Discovery Call
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#process">See how it works</a>
+        </div>
+        <ul class="hero-meta">
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> No long-term lock-in</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Senior engineers only</li>
+          <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Live within 5 business days</li>
+        </ul>
+      </div>
+
+      <div class="hero-card" aria-hidden="true">
+        <div class="hero-card-row">
+          <span class="stat">48 hrs</span>
+          <span class="label">Avg. time to first<br>working deploy</span>
+        </div>
+        <div class="hero-card-row">
+          <span class="stat">120+</span>
+          <span class="label">Enterprise integrations<br>shipped to date</span>
+        </div>
+        <div class="hero-card-row">
+          <span class="stat">98%</span>
+          <span class="label">Engagements renewed<br>or extended</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust bar -->
+  <section class="trust">
+    <div class="container">
+      <p>Trusted by engineering teams at</p>
+      <div class="trust-logos">
+        <span>ACME Corp</span>
+        <span>Northwind</span>
+        <span>Globex</span>
+        <span>Initech</span>
+        <span>Umbrella Labs</span>
+        <span>Soylent</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">What we do</span>
+        <h2>One team, every hard integration problem</h2>
+        <p>Pathfinder FDEs sit where the problem actually lives — in your codebase, in your customer's sprint, on the call where the deal gets stuck.</p>
+      </div>
+
+      <div class="grid grid-services">
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+          </div>
+          <h3>On-site integration</h3>
+          <p>An embedded engineer joins your customer's team to ship the custom integration that's blocking go-live.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6m0 8v6M4.9 4.9l4.2 4.2m5.8 5.8l4.2 4.2M2 12h6m8 0h6M4.9 19.1l4.2-4.2m5.8-5.8l4.2-4.2"/></svg>
+          </div>
+          <h3>Rapid prototyping</h3>
+          <p>Turn a whiteboard idea into a working, demoable product in days — built on your real data and APIs.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <h3>Technical pre-sales</h3>
+          <p>Engineers who can speak contract and code in the same meeting, closing the technical half of the deal.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Production hardening</h3>
+          <p>We take a working prototype the rest of the way: load testing, observability, security review, rollout plan.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          </div>
+          <h3>Customer-facing debugging</h3>
+          <p>Direct engineer-to-engineer escalation when a production issue needs a real answer, not a ticket queue.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>
+          </div>
+          <h3>Knowledge transfer</h3>
+          <p>Every engagement ends with documentation and hands-on training, so the win outlives the engineer.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section class="section section-muted" id="process">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>From first call to shipped outcome</h2>
+        <p>A simple, transparent engagement model built for speed — not procurement cycles.</p>
+      </div>
+
+      <div class="process-list">
+        <div class="process-step">
+          <h3>Discovery call</h3>
+          <p>We scope the problem, the stack, the stakeholders, and what "done" actually looks like.</p>
+        </div>
+        <div class="process-step">
+          <h3>Match &amp; embed</h3>
+          <p>A senior FDE matched to your domain joins your team — remote or on-site — within five business days.</p>
+        </div>
+        <div class="process-step">
+          <h3>Build &amp; ship</h3>
+          <p>Daily async standups and weekly demos with your actual users, iterating in the open.</p>
+        </div>
+        <div class="process-step">
+          <h3>Handoff</h3>
+          <p>Full documentation, runbooks, and training so your team owns everything we built together.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why us / stats -->
+  <section class="section section-dark" id="why">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" style="color:#7DD3FC;">Why Pathfinder</span>
+        <h2>Speed and context, not another vendor layer</h2>
+        <p>We don't hand you a spec and disappear. We sit in your stack until it's actually shipped.</p>
+      </div>
+
+      <div class="stats-strip">
+        <div>
+          <div class="num">5 days</div>
+          <div class="cap">Average time to embed</div>
+        </div>
+        <div>
+          <div class="num">120+</div>
+          <div class="cap">Integrations shipped</div>
+        </div>
+        <div>
+          <div class="num">40+</div>
+          <div class="cap">Enterprise clients served</div>
+        </div>
+        <div>
+          <div class="num">98%</div>
+          <div class="cap">Engagement renewal rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Social proof</span>
+        <h2>What engineering leaders say</h2>
+        <p>A few of the teams who've had a Pathfinder FDE embedded alongside them.</p>
+      </div>
+
+      <div class="grid grid-testimonials">
+        <article class="card quote-card">
+          <svg class="quote-mark" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 7h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3H7V7zm10 0h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3h-2V7z"/></svg>
+          <blockquote>"Our integration had been stuck for two quarters. Pathfinder's engineer had it in staging in nine days."</blockquote>
+          <div class="quote-author">
+            <span class="avatar" aria-hidden="true">DW</span>
+            <div>
+              <div class="name">Dana Whitfield</div>
+              <div class="role">VP Engineering, Meridian Health</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card quote-card">
+          <svg class="quote-mark" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 7h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3H7V7zm10 0h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3h-2V7z"/></svg>
+          <blockquote>"It felt like hiring a senior staff engineer for exactly the eight weeks we needed one — no ramp-up, no overhead."</blockquote>
+          <div class="quote-author">
+            <span class="avatar" aria-hidden="true">RK</span>
+            <div>
+              <div class="name">Rafael Kim</div>
+              <div class="role">CTO, Northwind Logistics</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card quote-card">
+          <svg class="quote-mark" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 7h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3H7V7zm10 0h4v4c0 3-2 5-5 5v-2c1.5 0 3-1 3-3h-2V7z"/></svg>
+          <blockquote>"The handoff docs alone were worth the engagement. Our team actually understands what shipped and why."</blockquote>
+          <div class="quote-author">
+            <span class="avatar" aria-hidden="true">PS</span>
+            <div>
+              <div class="name">Priya Sen</div>
+              <div class="role">Head of Platform, Globex Financial</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Engagement models -->
+  <section class="section section-muted" id="engagements">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Engagement models</span>
+        <h2>Pick the shape that fits the problem</h2>
+        <p>Every engagement starts with a scoped discovery call — pricing depends on scope, duration, and seniority required.</p>
+      </div>
+
+      <div class="grid grid-plans">
+        <article class="card plan-card">
+          <h3>Sprint</h3>
+          <p class="plan-price">1–2 weeks · fixed scope</p>
+          <ul class="plan-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> One senior FDE</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Single integration or prototype</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Daily async updates</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Handoff documentation</li>
+          </ul>
+          <a class="btn btn-outline btn-block" href="#contact">Scope a sprint</a>
+        </article>
+
+        <article class="card plan-card featured">
+          <span class="plan-badge">Most common</span>
+          <h3>Embedded Quarter</h3>
+          <p class="plan-price">8–12 weeks · dedicated FDE</p>
+          <ul class="plan-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Full-time embedded engineer</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Multiple integrations or a full rollout</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Weekly stakeholder demos</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Production hardening included</li>
+          </ul>
+          <a class="btn btn-primary btn-block" href="#contact">Start an embed</a>
+        </article>
+
+        <article class="card plan-card">
+          <h3>Enterprise Retainer</h3>
+          <p class="plan-price">Ongoing · pod of 2–4 FDEs</p>
+          <ul class="plan-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Dedicated pod across accounts</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Priority escalation SLA</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Quarterly roadmap reviews</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Dedicated account lead</li>
+          </ul>
+          <a class="btn btn-outline btn-block" href="#contact">Talk to sales</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions, answered</h2>
+        <p>Can't find what you're looking for? Reach out and we'll get back within one business day.</p>
+      </div>
+
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>What exactly is a Forward Deployed Engineer?</summary>
+          <div class="faq-answer">
+            <p class="mt-0">A Forward Deployed Engineer is a senior software engineer who works directly inside your team or your customer's environment — writing code, debugging live systems, and shipping integrations — rather than working remotely from a backlog handed over by sales.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary>How fast can an engineer actually start?</summary>
+          <div class="faq-answer">
+            <p class="mt-0">Most engagements kick off within five business days of the discovery call, once scope and access are confirmed. Urgent production issues can be triaged same-week.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary>Do you work remote, on-site, or both?</summary>
+          <div class="faq-answer">
+            <p class="mt-0">Both. Many engagements are fully remote; for customer-facing rollouts or sensitive environments, our FDEs can work on-site for all or part of the engagement.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary>What happens to the code after the engagement ends?</summary>
+          <div class="faq-answer">
+            <p class="mt-0">Everything we build lives in your repositories under your license from day one. Every engagement closes with documentation and a hands-on knowledge-transfer session with your team.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary>How is this different from a staffing agency?</summary>
+          <div class="faq-answer">
+            <p class="mt-0">We only place senior engineers who've shipped production systems, we scope outcomes rather than headcount, and every engagement includes a named technical lead accountable for the result — not just the hours.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="final-cta">
+        <h2>Ready to ship the integration that's been stuck?</h2>
+        <p>Tell us what's blocked. We'll come back with a scoped plan and a start date within two business days.</p>
+        <div class="hero-cta-row">
+          <a class="btn btn-primary" href="#contact">Book a Discovery Call</a>
+          <a class="btn btn-ghost" href="#engagements">Compare engagement models</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section section-muted" id="contact">
+    <div class="container">
+      <div class="contact-wrap">
+        <div class="contact-info">
+          <span class="eyebrow">Get in touch</span>
+          <h2>Let's scope your project</h2>
+          <p>Share a bit about what you're trying to ship. A senior FDE — not a salesperson — will reply.</p>
+
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><path d="M2 6h20v12H2z"/></svg>
+            <span>hello@pathfinderfde.example</span>
+          </div>
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <span>+1 (555) 019-2044</span>
+          </div>
+          <div class="info-row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Remote-first · engineers available worldwide</span>
+          </div>
+        </div>
+
+        <form class="form-card" action="#" method="post">
+          <div class="form-grid two-col">
+            <div class="field">
+              <label for="fullname">Full name</label>
+              <input type="text" id="fullname" name="fullname" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="workemail">Work email</label>
+              <input type="email" id="workemail" name="workemail" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="form-grid two-col" style="margin-top: var(--space-4);">
+            <div class="field">
+              <label for="company">Company</label>
+              <input type="text" id="company" name="company" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label for="timeline">Desired start</label>
+              <select id="timeline" name="timeline">
+                <option value="asap">As soon as possible</option>
+                <option value="2-4-weeks">In 2–4 weeks</option>
+                <option value="exploring">Just exploring</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top: var(--space-4);">
+            <label for="message">What are you trying to ship?</label>
+            <textarea id="message" name="message" required></textarea>
+            <span class="hint">A sentence or two is plenty — we'll follow up with questions.</span>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block">Request a discovery call</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="#top" aria-label="Pathfinder FDE home">
+          <span class="logo-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2-8-9-3z"/></svg>
+          </span>
+          Pathfinder FDE
+        </a>
+        <p>Senior Forward Deployed Engineers, embedded with your team until it ships.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Pathfinder on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.6 8.7L22.6 22H16l-5-6.6L5 22H2l8.1-9.3L2 2h6.6l4.6 6.1L18.9 2z"/></svg>
+          </a>
+          <a href="#" aria-label="Pathfinder on LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 11.02 5 2.5 2.5 0 01-.02-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.75V21h-4v-5.6c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.45-2.16 2.96V21h-4V9z"/></svg>
+          </a>
+          <a href="#" aria-label="Pathfinder on GitHub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.58 9.58 0 015 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0012 2z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="#why">About</a></li>
+          <li><a href="#testimonials">Customers</a></li>
+          <li><a href="#contact">Careers</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Services</h4>
+        <ul class="footer-links">
+          <li><a href="#services">Integration</a></li>
+          <li><a href="#services">Prototyping</a></li>
+          <li><a href="#services">Pre-sales</a></li>
+          <li><a href="#engagements">Engagement models</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Resources</h4>
+        <ul class="footer-links">
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#process">Our process</a></li>
+          <li><a href="#contact">Support</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Pathfinder FDE. All rights reserved.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
